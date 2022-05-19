@@ -16,6 +16,11 @@ import lotteryContract from '../blockchain/lottery'
 //lottery info kısmındaki kartlarda bu var: ${styles.lotteryinfo}  takmıyor
 
 // contract address: 0x8614A7657e16a973b13d5Bc12A3526b187225650
+//refresh attığımızda wallet disconnect oluyor?
+
+//1.26 da loop var maple
+//1.41 ifle check etme renderlarken
+//tutorial 2.02 de kaldım
 
 export default function Home() {
 
@@ -23,18 +28,44 @@ export default function Home() {
   const [account, setAccount] = useState();
   const [lc, setLc] = useState();
   const [lotteryMoney, setLotteryMoney] = useState();
+  const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+  const [lotteryNo, setLotteryNo] = useState();
 
-  useEffect(() => {
-    if (lc) getTotalLotteryMoneyCollected(0)
-  }, [lc, lotteryMoney])
+  useEffect(() => {  //lotteryNo ve totalmoney otomatik çekiliyor
+    
+    if (lc) {
+      const resultInSeconds= Math.floor(new Date().getTime() / 1000);
+      getLotteryNo(resultInSeconds);
+    }
+    if (lc && lotteryNo) getTotalLotteryMoneyCollected(lotteryNo);
+  }, [lc, lotteryMoney, lotteryNo])
 
   const getTotalLotteryMoneyCollected = async (i) => {
       const result = await lc.methods.getTotalLotteryMoneyCollected(i).call();
       setLotteryMoney(result);
   }
 
+  const getLotteryNo = async (time) => {
+    const result = await lc.methods.getLotteryNoBySec(time).call();
+    setLotteryNo(result);
+  }
+
+  const depositTLHandler = async (amount) => {   //şimdilik default 10 veriyoruz ama ui dan parametre almak lazım
+    try{
+      await lc.methods.depositTL(amount).send({from: account});  //adam buraya gas value falan da yazdı ama lazım mı
+      setSuccessMsg('Deposit Successful');   //daha onaylamadan basıyor aq
+      setError("");
+    }
+    catch(err){
+      setError(err.message)
+      setSuccessMsg("");
+    }
+  }
+
   const connectWalletHandler = async () => {
 
+    
     if(typeof window !== 'undefined' && typeof window.ethereum !== 'undefined') {  //if metamask is installed and ethereum injected
 
       try{
@@ -44,16 +75,20 @@ export default function Home() {
         setWeb3(web3);
         const accounts = await web3.eth.getAccounts();
         setAccount(accounts[0]);
-        const lc = lotteryContract(web3);  //create local instance for contract
+        const lc = await lotteryContract(web3);  //create local instance for contract
         setLc(lc);
+        setSuccessMsg('Wallet connected');
+        setError("");
       }
       catch(error){
-        console.log(error);
+        setError(error.message);
+        setSuccessMsg("");
       }
       
     }
     else{
-      console.log("metamask not installed");
+      setError("Metamask not installed");
+      setSuccessMsg("");
     }
   }
   
@@ -81,9 +116,21 @@ export default function Home() {
           <section className='mt-5'>
             <div className='columns'>
               <div className='column is-two-thirds'>
+
+                <section>
+                  <div className='container has-text-danger'>
+                    <p>{error}</p>
+                  </div>
+                </section>
+                <section>
+                  <div className='container has-text-success'>
+                    <p>{successMsg}</p>
+                  </div>
+                </section>
+
                 <section className='mt-5'>
                   <p>Deposit TL to buy tickets</p>
-                  <div className='button is-link is-light mt-3'> Deposit TL</div>
+                  <div onClick={() => depositTLHandler(10)} className='button is-link is-light mt-3'> Deposit TL</div>
                 </section>
                 <section className='mt-5'>
                   <p>Buy ticket with 10 TL</p>
@@ -131,7 +178,7 @@ export default function Home() {
                       <div className='content'>
                         <h2>Current Lottery</h2>
                         <div className='history-entry'>
-                          <div>No#: 7</div>
+                          <div>No#: {lotteryNo}</div>
                         </div>
                         <div className='history-entry'>
                           <div>Total Money Collected: {lotteryMoney} TL</div>
