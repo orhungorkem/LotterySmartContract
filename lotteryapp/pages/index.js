@@ -1,7 +1,9 @@
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
 import 'bulma/css/bulma.css'
-
+import Web3 from 'web3'
+import { useState, useEffect } from 'react'
+import lotteryContract from '../blockchain/lottery'
 
 //mt-5 is margin top
 //navbar-end is for right part of navbar
@@ -13,7 +15,48 @@ import 'bulma/css/bulma.css'
 //Home.module.css teki değişiklikler buraya yansımıyor gibi?
 //lottery info kısmındaki kartlarda bu var: ${styles.lotteryinfo}  takmıyor
 
+// contract address: 0x8614A7657e16a973b13d5Bc12A3526b187225650
+
 export default function Home() {
+
+  const [web3, setWeb3] = useState();
+  const [account, setAccount] = useState();
+  const [lc, setLc] = useState();
+  const [lotteryMoney, setLotteryMoney] = useState();
+
+  useEffect(() => {
+    if (lc) getTotalLotteryMoneyCollected(0)
+  }, [lc, lotteryMoney])
+
+  const getTotalLotteryMoneyCollected = async (i) => {
+      const result = await lc.methods.getTotalLotteryMoneyCollected(i).call();
+      setLotteryMoney(result);
+  }
+
+  const connectWalletHandler = async () => {
+
+    if(typeof window !== 'undefined' && typeof window.ethereum !== 'undefined') {  //if metamask is installed and ethereum injected
+
+      try{
+        
+        await window.ethereum.request({ method: 'eth_requestAccounts' });   //request wallet connection
+        const web3 = new Web3(window.ethereum);
+        setWeb3(web3);
+        const accounts = await web3.eth.getAccounts();
+        setAccount(accounts[0]);
+        const lc = lotteryContract(web3);  //create local instance for contract
+        setLc(lc);
+      }
+      catch(error){
+        console.log(error);
+      }
+      
+    }
+    else{
+      console.log("metamask not installed");
+    }
+  }
+  
   return (
     <div >
       <Head>
@@ -30,7 +73,7 @@ export default function Home() {
             
             </div>
             <div className='navbar-end'>
-              <button className='button is-link'>Connect Wallet</button>
+              <button onClick={connectWalletHandler} className='button is-link'>Connect Wallet</button>
             </div>
           </div>
         </nav>
@@ -91,7 +134,7 @@ export default function Home() {
                           <div>No#: 7</div>
                         </div>
                         <div className='history-entry'>
-                          <div>Total Money Collected: 1990 TL</div>
+                          <div>Total Money Collected: {lotteryMoney} TL</div>
                         </div>
                       </div>
                     </div>
