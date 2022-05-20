@@ -22,7 +22,9 @@ import lotteryContract from '../blockchain/lottery'
 //1.41 ifle check etme renderlarken
 //2.11 de json objesine alıyor bilgiyi ve basacak, ith winning ticketta falan işe yarar
 //2.32 account change should be updated sometimes, sorun olursa aklına gelsin
-//tutorialda userdan input alma yok, kendimiz bulucaz
+//depositTl için input aldıktan sonra inputa girilen amount silinmiyor bakılabilir
+//ayrıca infolar güncellenmiyor tekrar connectvalleta basmadan
+
 
 export default function Home() {
 
@@ -33,12 +35,16 @@ export default function Home() {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [lotteryNo, setLotteryNo] = useState();
+  const [depositamount, setDepositamount] = useState();
+  const [balance, setBalance] = useState();
+  const [hash, setHash] = useState();
 
   useEffect(() => {  //lotteryNo ve totalmoney otomatik çekiliyor, burayı bir fonksiyonda toparlayıp tüm fonksiyonların içinde çağıradabiliriz
     
     if (lc) {
       const resultInSeconds= Math.floor(new Date().getTime() / 1000);
       getLotteryNo(resultInSeconds);
+      getBalanceHandler();
     }
     if (lc && lotteryNo) getTotalLotteryMoneyCollected(lotteryNo);
   }, [lc, lotteryMoney, lotteryNo])
@@ -56,7 +62,26 @@ export default function Home() {
   const depositTLHandler = async (amount) => {   //şimdilik default 10 veriyoruz ama ui dan parametre almak lazım
     try{
       await lc.methods.depositTL(amount).send({from: account});  //adam buraya gas value falan da yazdı ama lazım mı
-      setSuccessMsg('Deposit Successful');   //daha onaylamadan basıyor aq
+      setSuccessMsg('Deposit Successful');   
+      setError("");
+      setDepositamount("");
+    }
+    catch(err){
+      setError(err.message)
+      setSuccessMsg("");
+      setDepositamount("");
+    }
+  }
+
+  const getBalanceHandler = async () => {
+    const balance = await lc.methods.getBalance().call({from: account});
+    setBalance(balance);
+  }
+
+  const buyTicketHandler = async (hashrndnumber) => {
+    try{
+      await lc.methods.buyTicket(hashrndnumber).send({from: account});
+      setSuccessMsg('Bought Ticket Successfully');
       setError("");
     }
     catch(err){
@@ -130,19 +155,70 @@ export default function Home() {
                   </div>
                 </section>
 
+      
+                
+
                 <section className='mt-5'>
                   <p>Deposit TL to buy tickets</p>
-                  <div onClick={() => depositTLHandler(10)} className='button is-link is-light mt-3'> Deposit TL</div>
-                </section>
+
+
+                  <div class="columns">
+                    <div class="column is-one-third">                  
+                      <section className='mt-2'>
+                      <div class="field">
+                      <div class="control">
+                        <input class="input" type="text" placeholder="Amount of TL to deposit" onChange={e => setDepositamount(e.target.value)}>
+                        </input>
+                      </div>
+                    </div>
+                    </section>
+                      <div onClick={() => depositTLHandler(depositamount)} className='button is-link is-light mt-3'> Deposit TL</div>
+                      </div>
+                    </div>
+                  </section>
+                  
+
+
                 <section className='mt-5'>
                   <p>Buy ticket with 10 TL</p>
-                  <div className='button is-primary is-light mt-3'> Buy Ticket</div>
-                </section>
+                  <section className='mt-2'>
+                      <div class="field">
+                      <div class="control">
+                        <input class="input" type="text" placeholder="Provide random hash beginning by 0x to buy ticket" onChange={e => setHash(e.target.value)}>
+                        </input>
+                      </div>
+                    </div>
+                    </section>
+                      <div onClick={() => buyTicketHandler(hash)} className='button is-primary is-light mt-3'> Buy Ticket</div>
+           
+
+
                 <section className='mt-5'>
                   <div className='button is-link is-light mt-3'> Withdraw TL</div>
+                  </section>
                 </section>
+              
+              
               </div>
+
+
               <div className='${styles.lotteryinfo} column is-one-third'>
+
+                <section className='mt-5'>
+                  <div className='card'>
+                    <div className='card-content'>
+                      <div className='content'>
+                        <h2>User Information</h2>
+                        <div className='history-entry'>
+                          <div>Balance: {balance} TL</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  </section>
+
+
+
                 <section className='mt-5'>
                   <div className='card'>
                     <div className='card-content'>
