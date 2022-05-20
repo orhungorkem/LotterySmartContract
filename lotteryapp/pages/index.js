@@ -20,7 +20,9 @@ import lotteryContract from '../blockchain/lottery'
 
 //1.26 da loop var maple
 //1.41 ifle check etme renderlarken
-//tutorial 2.02 de kaldım
+//2.11 de json objesine alıyor bilgiyi ve basacak, ith winning ticketta falan işe yarar
+//2.32 account change should be updated sometimes, sorun olursa aklına gelsin
+//tutorialda userdan input alma yok, kendimiz bulucaz
 
 export default function Home() {
 
@@ -32,7 +34,7 @@ export default function Home() {
   const [successMsg, setSuccessMsg] = useState('');
   const [lotteryNo, setLotteryNo] = useState();
 
-  useEffect(() => {  //lotteryNo ve totalmoney otomatik çekiliyor
+  useEffect(() => {  //lotteryNo ve totalmoney otomatik çekiliyor, burayı bir fonksiyonda toparlayıp tüm fonksiyonların içinde çağıradabiliriz
     
     if (lc) {
       const resultInSeconds= Math.floor(new Date().getTime() / 1000);
@@ -42,7 +44,7 @@ export default function Home() {
   }, [lc, lotteryMoney, lotteryNo])
 
   const getTotalLotteryMoneyCollected = async (i) => {
-      const result = await lc.methods.getTotalLotteryMoneyCollected(i).call();
+      const result = await lc.methods.getTotalLotteryMoneyCollected(i).call();    //state variable olan arrayler ve mappingler de olduğu gibi böylr çağrılabilir
       setLotteryMoney(result);
   }
 
