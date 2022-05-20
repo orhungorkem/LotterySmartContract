@@ -22,8 +22,14 @@ import lotteryContract from '../blockchain/lottery'
 //1.41 ifle check etme renderlarken
 //2.11 de json objesine alıyor bilgiyi ve basacak, ith winning ticketta falan işe yarar
 //2.32 account change should be updated sometimes, sorun olursa aklına gelsin
+
+//TODO
+//refresh attığımızda wallet disconnect oluyor?
 //depositTl için input aldıktan sonra inputa girilen amount silinmiyor bakılabilir
 //ayrıca infolar güncellenmiyor tekrar connectvalleta basmadan
+//fazla para withdraw ederken sözleşmede hata olabilir uyarısı geliyor istediğimiz error yerine
+
+//13 ve 1998 in sha3 hashi ile bilet aldım 13 ve 1998 reveal edebilirizz denerken
 
 
 export default function Home() {
@@ -36,8 +42,11 @@ export default function Home() {
   const [successMsg, setSuccessMsg] = useState('');
   const [lotteryNo, setLotteryNo] = useState();
   const [depositamount, setDepositamount] = useState();
+  const [withdrawamount, setWithdrawamount] = useState();
   const [balance, setBalance] = useState();
   const [hash, setHash] = useState();
+  const [lastOwnedTicket, setLastOwnedTicket] = useState([]);
+  const [lotteryQueried, setLotteryQueried] = useState();
 
   useEffect(() => {  //lotteryNo ve totalmoney otomatik çekiliyor, burayı bir fonksiyonda toparlayıp tüm fonksiyonların içinde çağıradabiliriz
     
@@ -73,6 +82,20 @@ export default function Home() {
     }
   }
 
+  const withdrawTLHandler = async (amount) => {   //şimdilik default 10 veriyoruz ama ui dan parametre almak lazım
+    try{
+      await lc.methods.withdrawTL(amount).send({from: account});  //adam buraya gas value falan da yazdı ama lazım mı
+      setSuccessMsg('Withdraw Successful');   
+      setError("");
+      setWithdrawamount("");
+    }
+    catch(err){
+      setError(err.message)
+      setSuccessMsg("");
+      setWithdrawamount("");
+    }
+  }
+
   const getBalanceHandler = async () => {
     const balance = await lc.methods.getBalance().call({from: account});
     setBalance(balance);
@@ -88,6 +111,21 @@ export default function Home() {
       setError(err.message)
       setSuccessMsg("");
     }
+  }
+
+  const getLastOwnedTicketNoHandler = async (lotteryNo) => {
+      try{
+        console.log(lotteryNo);
+        const result = await lc.methods.getLastOwnedTicketNo(lotteryNo).call({from: account});
+        console.log(result);
+        setLastOwnedTicket(result);
+      }
+      catch(err){
+        setError(err.message)   //lotteryExists modifierında eksiklik yapmışız, yüksek lottery no da kabul edilmemeli 
+        //o sebeple bu error kötü görünüyor
+        setSuccessMsg("");
+      }
+
   }
 
   const connectWalletHandler = async () => {
@@ -160,19 +198,33 @@ export default function Home() {
 
                 <section className='mt-5'>
                   <p>Deposit TL to buy tickets</p>
+                  <div class="columns">
+                    <div class="column is-one-third">                  
+                      <section className='mt-2'>
+                        <div class="field">
+                        <div class="control">
+                          <input class="input" type="text" placeholder="Amount of TL to deposit" onChange={e => setDepositamount(e.target.value)}>
+                          </input>
+                        </div>
+                        </div>
+                      </section>
+                      <div onClick={() => depositTLHandler(depositamount)} className='button is-link is-light mt-3'> Deposit TL</div>
+                    </div>
+                  </div>
+                </section>
 
-
+                  <section className='mt-5'>
                   <div class="columns">
                     <div class="column is-one-third">                  
                       <section className='mt-2'>
                       <div class="field">
                       <div class="control">
-                        <input class="input" type="text" placeholder="Amount of TL to deposit" onChange={e => setDepositamount(e.target.value)}>
+                        <input class="input" type="text" placeholder="Amount of TL to withdraw" onChange={e => setWithdrawamount(e.target.value)}>
                         </input>
                       </div>
                     </div>
                     </section>
-                      <div onClick={() => depositTLHandler(depositamount)} className='button is-link is-light mt-3'> Deposit TL</div>
+                      <div onClick={() => withdrawTLHandler(withdrawamount)} className='button is-link is-light mt-3'> Withdraw TL</div>
                       </div>
                     </div>
                   </section>
@@ -191,13 +243,19 @@ export default function Home() {
                     </section>
                       <div onClick={() => buyTicketHandler(hash)} className='button is-primary is-light mt-3'> Buy Ticket</div>
            
-
+                </section>
 
                 <section className='mt-5'>
-                  <div className='button is-link is-light mt-3'> Withdraw TL</div>
-                  </section>
+                      <div class="field">
+                      <div class="control">
+                        <input class="input" type="text" placeholder="Lottery no to get last owned ticket no" onChange={e => setLotteryQueried(e.target.value)}>
+                        </input>
+                      </div>
+                    </div>
+                      <div onClick={() => getLastOwnedTicketNoHandler(lotteryQueried)} className='button is-primary is-light mt-1'> Get last owned ticket no</div>
+                      <div className='mt-5'>Last owned ticket no in lottery #{lotteryQueried}: {lastOwnedTicket[0]} </div>
+                      <div>Last owned ticket status in lottery #{lotteryQueried}: {lastOwnedTicket[1]} </div>
                 </section>
-              
               
               </div>
 
