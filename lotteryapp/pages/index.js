@@ -28,8 +28,12 @@ import lotteryContract from '../blockchain/lottery'
 //depositTl için input aldıktan sonra inputa girilen amount silinmiyor bakılabilir
 //ayrıca infolar güncellenmiyor tekrar connectvalleta basmadan
 //fazla para withdraw ederken sözleşmede hata olabilir uyarısı geliyor istediğimiz error yerine
+//reveal ticketta yanlis parametreler versek de hata vermiyor cunku solidityde ticketi cancel ediyoruz, ama 
+//kullaniciya reveal edilmedigini gostermek gerekir mi
+//revert alinca direk error donuyor aq
 
 //13 ve 1998 in sha3 hashi ile bilet aldım 13 ve 1998 reveal edebilirizz denerken
+//bendekiler 150 117
 
 
 export default function Home() {
@@ -45,6 +49,10 @@ export default function Home() {
   const [withdrawamount, setWithdrawamount] = useState();
   const [balance, setBalance] = useState();
   const [hash, setHash] = useState();
+  const [ticketNo, setTicketNo] = useState();
+  const [rndNumber, setRndNumber] = useState();
+  const [i, setI] = useState();
+  const [ithOwnedTicket, setIthOwnedTicket] = useState([]);
   const [lastOwnedTicket, setLastOwnedTicket] = useState([]);
   const [lotteryQueried, setLotteryQueried] = useState();
 
@@ -113,6 +121,32 @@ export default function Home() {
     }
   }
 
+  const revealRndNumberHandler = async (ticketNo, rndNumber) => {
+    try {
+      await lc.methods.revealRndNumber(ticketNo, rndNumber).send({from: account});
+      setSuccessMsg('Revealing Request Done Successfully');
+      setError("");
+    }
+    catch(err) {
+      setError(err.message)
+      setSuccessMsg("");
+    }
+  }
+
+  const getIthOwnedTicketNoHandler = async (i, lotteryNo) => {
+    try{
+      console.log(lotteryNo);
+      const result = await lc.methods.getIthOwnedTicketNo(i, lotteryNo).call({from: account});
+      console.log(result);
+      setIthOwnedTicket(result);
+    }
+    catch(err){
+      setError(err.message)   //lotteryExists modifierında eksiklik yapmışız, yüksek lottery no da kabul edilmemeli 
+      //o sebeple bu error kötü görünüyor
+      setSuccessMsg("");
+    }
+}
+
   const getLastOwnedTicketNoHandler = async (lotteryNo) => {
       try{
         console.log(lotteryNo);
@@ -125,7 +159,6 @@ export default function Home() {
         //o sebeple bu error kötü görünüyor
         setSuccessMsg("");
       }
-
   }
 
   const connectWalletHandler = async () => {
@@ -236,13 +269,51 @@ export default function Home() {
                   <section className='mt-2'>
                       <div class="field">
                       <div class="control">
-                        <input class="input" type="text" placeholder="Provide random hash beginning by 0x to buy ticket" onChange={e => setHash(e.target.value)}>
+                        <input class="input" type="text" placeholder="Random hash beginning by 0x to buy ticket" onChange={e => setHash(e.target.value)}>
                         </input>
                       </div>
                     </div>
                     </section>
                       <div onClick={() => buyTicketHandler(hash)} className='button is-primary is-light mt-3'> Buy Ticket</div>
-           
+                </section>
+
+                <section className='mt-5'>
+                  <p>Reveal ticket with your random number</p>
+                  <section className='mt-2'>
+                      <div class="field">
+                      <div class="control">
+                        <input class="input" type="text" placeholder="Ticket number" onChange={e => setTicketNo(e.target.value)}>
+                        </input>
+                      </div>
+                    </div>
+                    </section>
+                    <section className='mt-2'>
+                      <div class="field">
+                      <div class="control">
+                        <input class="input" type="text" placeholder="Random number associated with the ticket" onChange={e => setRndNumber(e.target.value)}>
+                        </input>
+                      </div>
+                    </div>
+                    </section>
+                      <div onClick={() => revealRndNumberHandler(ticketNo, rndNumber)} className='button is-primary is-light mt-3'> Reveal Ticket</div>
+                </section>
+
+                <section className='mt-5'>
+                      <div class="field">
+                      <div class="control">
+                        <input class="input" type="text" placeholder="The index of the ticket for the user" onChange={e => setI(e.target.value)}>
+                        </input>
+                      </div>
+                    </div>
+                      <div class="field">
+                      <div class="control">
+                        <input class="input" type="text" placeholder="Lottery no to get ith owned ticket no" onChange={e => setLotteryQueried(e.target.value)}>
+                        </input>
+                      </div>
+                    </div>
+                      <div onClick={() => getIthOwnedTicketNoHandler(i, lotteryQueried)} className='button is-primary is-light mt-1'> Get ith owned ticket no</div>
+                      <div className='mt-5'>{i}th owned ticket no in lottery #{lotteryQueried}: {ithOwnedTicket[0]} </div>
+                      <div>{i}th owned ticket status in lottery #{lotteryQueried}: {ithOwnedTicket[1]} </div>
                 </section>
 
                 <section className='mt-5'>
