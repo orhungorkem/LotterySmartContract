@@ -55,6 +55,8 @@ export default function Home() {
   const [ithOwnedTicket, setIthOwnedTicket] = useState([]);
   const [lastOwnedTicket, setLastOwnedTicket] = useState([]);
   const [lotteryQueried, setLotteryQueried] = useState();
+  const [prize, setPrize] = useState();
+  const [ithWinningTicket, setIthWinningTicket] = useState([]);
 
   useEffect(() => {  //lotteryNo ve totalmoney otomatik çekiliyor, burayı bir fonksiyonda toparlayıp tüm fonksiyonların içinde çağıradabiliriz
     
@@ -121,6 +123,18 @@ export default function Home() {
     }
   }
 
+  const collectTicketRefundHandler = async (ticketNo) => {
+    try {
+      await lc.methods.collectTicketRefund(ticketNo).send({from: account});
+      setSuccessMsg('Refund Collected Successfully');
+      setError("");
+    }
+    catch(err){
+      setError(err.message)
+      setSuccessMsg("");
+    }
+  }
+
   const revealRndNumberHandler = async (ticketNo, rndNumber) => {
     try {
       await lc.methods.revealRndNumber(ticketNo, rndNumber).send({from: account});
@@ -159,6 +173,44 @@ export default function Home() {
         //o sebeple bu error kötü görünüyor
         setSuccessMsg("");
       }
+  }
+
+  const checkIfTicketWonHandler = async (ticketNo) => {
+    try {
+      const result = await lc.methods.checkIfTicketWon(ticketNo).call({from: account});
+      setPrize(result);
+      setSuccessMsg('Prize for the Given Ticket Calculated Successfully');
+      setError("");
+    }
+    catch(err) {
+      setError(err.message);
+      setSuccessMsg("");
+    }
+  }
+
+  const collectTicketPrizeHandler = async (ticketNo) => {
+    try {
+      await lc.methods.collectTicketPrize(ticketNo).send({from: account});
+      setSuccessMsg('Prize Collected Successfully');
+      setError("");
+    }
+    catch(err) {
+      setError(err.message);
+      setSuccessMsg("");
+    }
+  }
+  
+  const getIthWinningTicketHandler = async (i, lotteryNo) => {
+    try {
+      const result = await lc.methods.getIthWinningTicket(i, lotteryNo).call({from: account});
+      setIthWinningTicket(result);
+      setSuccessMsg('Winning Ticket Returned Successfully');
+      setError("");
+    }
+    catch(err) {
+      setError(err.message);
+      setSuccessMsg("");
+    }
   }
 
   const connectWalletHandler = async () => {
@@ -247,6 +299,7 @@ export default function Home() {
                 </section>
 
                   <section className='mt-5'>
+                  <p>Withdraw TL from your account</p>
                   <div class="columns">
                     <div class="column is-one-third">                  
                       <section className='mt-2'>
@@ -261,8 +314,6 @@ export default function Home() {
                       </div>
                     </div>
                   </section>
-                  
-
 
                 <section className='mt-5'>
                   <p>Buy ticket with 10 TL</p>
@@ -275,6 +326,19 @@ export default function Home() {
                     </div>
                     </section>
                       <div onClick={() => buyTicketHandler(hash)} className='button is-primary is-light mt-3'> Buy Ticket</div>
+                </section>
+              
+                <section className='mt-5'>
+                  <p>Collect ticket refund</p>
+                  <section className='mt-2'>
+                      <div class="field">
+                      <div class="control">
+                        <input class="input" type="text" placeholder="Ticket number" onChange={e => setTicketNo(e.target.value)}>
+                        </input>
+                      </div>
+                    </div>
+                    </section>
+                      <div onClick={() => collectTicketRefundHandler(ticketNo)} className='button is-primary is-light mt-3'> Collect ticket refund</div>
                 </section>
 
                 <section className='mt-5'>
@@ -299,6 +363,7 @@ export default function Home() {
                 </section>
 
                 <section className='mt-5'>
+                <p>Get your ith owned ticket in a lottery</p>
                       <div class="field">
                       <div class="control">
                         <input class="input" type="text" placeholder="The index of the ticket for the user" onChange={e => setI(e.target.value)}>
@@ -317,6 +382,7 @@ export default function Home() {
                 </section>
 
                 <section className='mt-5'>
+                <p>Get your last owned ticket in a lottery</p>
                       <div class="field">
                       <div class="control">
                         <input class="input" type="text" placeholder="Lottery no to get last owned ticket no" onChange={e => setLotteryQueried(e.target.value)}>
@@ -327,6 +393,49 @@ export default function Home() {
                       <div className='mt-5'>Last owned ticket no in lottery #{lotteryQueried}: {lastOwnedTicket[0]} </div>
                       <div>Last owned ticket status in lottery #{lotteryQueried}: {lastOwnedTicket[1]} </div>
                 </section>
+
+                <section className='mt-5'>
+                <p>Check if ticket has won</p>
+                      <div class="field">
+                      <div class="control">
+                        <input class="input" type="text" placeholder="Ticket number" onChange={e => setTicketNo(e.target.value)}>
+                        </input>
+                      </div>
+                    </div>
+                      <div onClick={() => checkIfTicketWonHandler(ticketNo)} className='button is-primary is-light mt-1'> Get prize</div>
+                      <div className='mt-5'>Prize won by the given ticket: {prize} </div>
+                </section>
+
+                <section className='mt-5'>
+                <p>Collect ticket prize</p>
+                      <div class="field">
+                      <div class="control">
+                        <input class="input" type="text" placeholder="Ticket number" onChange={e => setTicketNo(e.target.value)}>
+                        </input>
+                      </div>
+                    </div>
+                      <div onClick={() => collectTicketPrizeHandler(ticketNo)} className='button is-primary is-light mt-1'> Collect prize</div>
+                </section>
+
+                <section className='mt-5'>
+                <p>Get ith winning ticket in a lottery</p>
+                      <div class="field">
+                      <div class="control">
+                        <input class="input" type="text" placeholder="The index of the ticket" onChange={e => setI(e.target.value)}>
+                        </input>
+                      </div>
+                    </div>
+                      <div class="field">
+                      <div class="control">
+                        <input class="input" type="text" placeholder="Lottery no to get ith winning ticket" onChange={e => setLotteryQueried(e.target.value)}>
+                        </input>
+                      </div>
+                    </div>
+                      <div onClick={() => getIthWinningTicketHandler(i, lotteryQueried)} className='button is-primary is-light mt-1'> Get ith winning ticket</div>
+                      <div className='mt-5'>{i}th winning ticket no in lottery #{lotteryQueried}: {ithWinningTicket[0]} </div>
+                      <div>Prize won by the {i}th winning ticket in lottery #{lotteryQueried}: {ithWinningTicket[1]} </div>
+                </section>
+
               
               </div>
 
