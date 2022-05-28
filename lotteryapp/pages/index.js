@@ -35,6 +35,11 @@ import lotteryContract from '../blockchain/lottery'
 //13 ve 1998 in sha3 hashi ile bilet aldım 13 ve 1998 reveal edebilirizz denerken
 //bendekiler 150 117
 
+//ticketno 0 rnd 13 ile reveal ettim
+
+//lottery 1 de 137 ile bilet aldım ticcket no 7
+//1111 ile aldım ticket no 8
+
 
 export default function Home() {
 
@@ -57,12 +62,15 @@ export default function Home() {
   const [lotteryQueried, setLotteryQueried] = useState();
   const [prize, setPrize] = useState();
   const [ithWinningTicket, setIthWinningTicket] = useState([]);
+  const [txHash, setTxHash] = useState();
+  const [ticketCount, setTicketCount] = useState();
 
   useEffect(() => {  //lotteryNo ve totalmoney otomatik çekiliyor, burayı bir fonksiyonda toparlayıp tüm fonksiyonların içinde çağıradabiliriz
     
     if (lc) {
       const resultInSeconds= Math.floor(new Date().getTime() / 1000);
       getLotteryNo(resultInSeconds);
+      getTicketCount();
       getBalanceHandler();
     }
     if (lc && lotteryNo) getTotalLotteryMoneyCollected(lotteryNo);
@@ -77,6 +85,12 @@ export default function Home() {
     const result = await lc.methods.getLotteryNoBySec(time).call();
     setLotteryNo(result);
   }
+
+  const getTicketCount = async () => {
+    const result = await lc.methods.ticketCounter().call();
+    setTicketCount(result);
+  }
+
 
   const depositTLHandler = async (amount) => {   //şimdilik default 10 veriyoruz ama ui dan parametre almak lazım
     try{
@@ -125,11 +139,39 @@ export default function Home() {
 
   const collectTicketRefundHandler = async (ticketNo) => {
     try {
-      await lc.methods.collectTicketRefund(ticketNo).send({from: account});
+      await lc.methods.collectTicketRefund(ticketNo).send({from: account}).on('transactionHash', (txhash) => {setTxHash(txhash)});
       setSuccessMsg('Refund Collected Successfully');
       setError("");
     }
     catch(err){
+      /*
+      console.log(txHash);
+      const tx = await web3.eth.getTransaction(txHash);
+      console.log(tx)
+      
+      web3.eth.getTransactionReceipt(txHash, (err2, receipt) => {
+        if (err2) {
+          console.log(err2);
+        }
+        else {
+          console.log(receipt);
+        }
+      });
+      
+
+    
+      const replay_tx = {from: account}
+
+      try{
+        web3.eth.call(replay_tx, tx.blockNumber - 1)
+      }
+      catch(err2){
+        console.log(err2)
+        setError(err2)
+        setSuccessMsg("");
+      }
+*/
+
       setError(err.message)
       setSuccessMsg("");
     }
@@ -457,31 +499,13 @@ export default function Home() {
 
 
 
-                <section className='mt-5'>
-                  <div className='card'>
-                    <div className='card-content'>
-                      <div className='content'>
-                        <h2>Lottery History</h2>
-                        <div className='history-entry'>
-                          <div>Lottery #1 winner: </div>
-                          <div>
-                            <a href='https://etherscan.io/address/0x16C67983D84474C954c32a9b2fdb3a1aFd6ED7b6'>
-                            0x16C67983D84474C954c32a9b2fdb3a1aFd6ED7b6
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  </section>
-
                   <section className='mt-5'>
                   <div className='card'>
                     <div className='card-content'>
                       <div className='content'>
                         <h2>Ticket History</h2>
                         <div className='history-entry'>
-                          <div>Ticket #: Bla bla</div>
+                          <div>Last Ticket #: {ticketCount - 1}</div>
                         </div>
                       </div>
                     </div>
