@@ -32,6 +32,8 @@ import lotteryContract from '../blockchain/lottery'
 //kullaniciya reveal edilmedigini gostermek gerekir mi
 //revert alinca direk error donuyor aq
 
+//birden çok refund alabiliyoruz unutmuşuz
+
 //13 ve 1998 in sha3 hashi ile bilet aldım 13 ve 1998 reveal edebilirizz denerken
 //bendekiler 150 117
 
@@ -39,6 +41,9 @@ import lotteryContract from '../blockchain/lottery'
 
 //lottery 1 de 137 ile bilet aldım ticcket no 7
 //1111 ile aldım ticket no 8
+
+//176 ile aldım ticket no 9 lottery no 2
+//88 ticket no 10 lottery no 2
 
 
 export default function Home() {
@@ -100,7 +105,7 @@ export default function Home() {
       setDepositamount("");
     }
     catch(err){
-      setError(err.message)
+      setError("Invalid transaction request")
       setSuccessMsg("");
       setDepositamount("");
     }
@@ -114,7 +119,7 @@ export default function Home() {
       setWithdrawamount("");
     }
     catch(err){
-      setError(err.message)
+      setError("Invalid transaction request");
       setSuccessMsg("");
       setWithdrawamount("");
     }
@@ -132,7 +137,7 @@ export default function Home() {
       setError("");
     }
     catch(err){
-      setError(err.message)
+      setError("Invalid transaction request")
       setSuccessMsg("");
     }
   }
@@ -144,35 +149,9 @@ export default function Home() {
       setError("");
     }
     catch(err){
-      /*
-      console.log(txHash);
-      const tx = await web3.eth.getTransaction(txHash);
-      console.log(tx)
-      
-      web3.eth.getTransactionReceipt(txHash, (err2, receipt) => {
-        if (err2) {
-          console.log(err2);
-        }
-        else {
-          console.log(receipt);
-        }
-      });
       
 
-    
-      const replay_tx = {from: account}
-
-      try{
-        web3.eth.call(replay_tx, tx.blockNumber - 1)
-      }
-      catch(err2){
-        console.log(err2)
-        setError(err2)
-        setSuccessMsg("");
-      }
-*/
-
-      setError(err.message)
+      setError("Invalid transaction request")
       setSuccessMsg("");
     }
   }
@@ -184,7 +163,7 @@ export default function Home() {
       setError("");
     }
     catch(err) {
-      setError(err.message)
+      setError("Invalid transaction request")
       setSuccessMsg("");
     }
   }
@@ -197,8 +176,7 @@ export default function Home() {
       setIthOwnedTicket(result);
     }
     catch(err){
-      setError(err.message)   //lotteryExists modifierında eksiklik yapmışız, yüksek lottery no da kabul edilmemeli 
-      //o sebeple bu error kötü görünüyor
+      setError("Invalid transaction request")   //lotteryExists modifierında eksiklik yapmışız, yüksek lottery no da kabul edilmemeli 
       setSuccessMsg("");
     }
 }
@@ -211,8 +189,7 @@ export default function Home() {
         setLastOwnedTicket(result);
       }
       catch(err){
-        setError(err.message)   //lotteryExists modifierında eksiklik yapmışız, yüksek lottery no da kabul edilmemeli 
-        //o sebeple bu error kötü görünüyor
+        setError("Invalid transaction request")   //lotteryExists modifierında eksiklik yapmışız, yüksek lottery no da kabul edilmemeli 
         setSuccessMsg("");
       }
   }
@@ -225,7 +202,7 @@ export default function Home() {
       setError("");
     }
     catch(err) {
-      setError(err.message);
+      setError("Invalid transaction request");
       setSuccessMsg("");
     }
   }
@@ -237,7 +214,7 @@ export default function Home() {
       setError("");
     }
     catch(err) {
-      setError(err.message);
+      setError("Invalid transaction request");
       setSuccessMsg("");
     }
   }
@@ -250,7 +227,7 @@ export default function Home() {
       setError("");
     }
     catch(err) {
-      setError(err.message);
+      setError("Invalid transaction request");
       setSuccessMsg("");
     }
   }
