@@ -5,34 +5,7 @@ import Web3 from 'web3'
 import { useState, useEffect } from 'react'
 import lotteryContract from '../blockchain/lottery'
 
-//mt-5 is margin top
-//navbar-end is for right part of navbar
-//column is-two-thirds means it will take 2/3 of the screen in column
 
-//for large button, use is-large
-//lottery history kısmı değişir
-
-//Home.module.css teki değişiklikler buraya yansımıyor gibi?
-//lottery info kısmındaki kartlarda bu var: ${styles.lotteryinfo}  takmıyor
-
-// contract address: 0x8614A7657e16a973b13d5Bc12A3526b187225650
-//refresh attığımızda wallet disconnect oluyor?
-
-//1.26 da loop var maple
-//1.41 ifle check etme renderlarken
-//2.11 de json objesine alıyor bilgiyi ve basacak, ith winning ticketta falan işe yarar
-//2.32 account change should be updated sometimes, sorun olursa aklına gelsin
-
-//TODO
-//refresh attığımızda wallet disconnect oluyor?
-//depositTl için input aldıktan sonra inputa girilen amount silinmiyor bakılabilir
-//ayrıca infolar güncellenmiyor tekrar connectvalleta basmadan
-//fazla para withdraw ederken sözleşmede hata olabilir uyarısı geliyor istediğimiz error yerine
-//reveal ticketta yanlis parametreler versek de hata vermiyor cunku solidityde ticketi cancel ediyoruz, ama 
-//kullaniciya reveal edilmedigini gostermek gerekir mi
-//revert alinca direk error donuyor aq
-
-//birden çok refund alabiliyoruz unutmuşuz
 
 //13 ve 1998 in sha3 hashi ile bilet aldım 13 ve 1998 reveal edebilirizz denerken
 //bendekiler 150 117
@@ -42,7 +15,7 @@ import lotteryContract from '../blockchain/lottery'
 //lottery 1 de 137 ile bilet aldım ticcket no 7
 //1111 ile aldım ticket no 8
 
-//176 ile aldım ticket no 9 lottery no 2
+
 //88 ticket no 10 lottery no 2
 
 
@@ -70,7 +43,7 @@ export default function Home() {
   const [txHash, setTxHash] = useState();
   const [ticketCount, setTicketCount] = useState();
 
-  useEffect(() => {  //lotteryNo ve totalmoney otomatik çekiliyor, burayı bir fonksiyonda toparlayıp tüm fonksiyonların içinde çağıradabiliriz
+  useEffect(() => {  
     
     if (lc) {
       const resultInSeconds= Math.floor(new Date().getTime() / 1000);
@@ -97,9 +70,9 @@ export default function Home() {
   }
 
 
-  const depositTLHandler = async (amount) => {   //şimdilik default 10 veriyoruz ama ui dan parametre almak lazım
+  const depositTLHandler = async (amount) => {  
     try{
-      await lc.methods.depositTL(amount).send({from: account});  //adam buraya gas value falan da yazdı ama lazım mı
+      await lc.methods.depositTL(amount).send({from: account}); 
       setSuccessMsg('Deposit Successful');   
       setError("");
       setDepositamount("");
@@ -111,9 +84,9 @@ export default function Home() {
     }
   }
 
-  const withdrawTLHandler = async (amount) => {   //şimdilik default 10 veriyoruz ama ui dan parametre almak lazım
+  const withdrawTLHandler = async (amount) => {   
     try{
-      await lc.methods.withdrawTL(amount).send({from: account});  //adam buraya gas value falan da yazdı ama lazım mı
+      await lc.methods.withdrawTL(amount).send({from: account});  
       setSuccessMsg('Withdraw Successful');   
       setError("");
       setWithdrawamount("");
